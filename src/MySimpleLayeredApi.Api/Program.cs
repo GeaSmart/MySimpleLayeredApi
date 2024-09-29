@@ -17,7 +17,7 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName.Equals("Docker"))
 {
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -29,4 +29,17 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+await ApplyMigrationsAndSeedDataAsync(app);//migraciones automáticas
+
 app.Run();
+
+static async Task ApplyMigrationsAndSeedDataAsync(WebApplication app)
+{
+    using var scope = app.Services.CreateScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+    if (dbContext.Database.GetPendingMigrations().Any())
+    {
+        await dbContext.Database.MigrateAsync();
+    }
+}
