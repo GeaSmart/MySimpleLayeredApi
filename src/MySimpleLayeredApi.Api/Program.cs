@@ -29,8 +29,10 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-await ApplyMigrationsAndSeedDataAsync(app);//migraciones automáticas
-
+if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName.Equals("Docker"))
+{
+    await ApplyMigrationsAndSeedDataAsync(app);//migraciones automáticas
+}
 app.Run();
 
 static async Task ApplyMigrationsAndSeedDataAsync(WebApplication app)
